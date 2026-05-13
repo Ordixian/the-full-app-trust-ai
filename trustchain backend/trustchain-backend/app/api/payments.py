@@ -5,8 +5,8 @@ from app.core.config import settings
 
 router = APIRouter()
 
-# Squad Sandbox URL
-SQUAD_URL = "https://api-d.squadco.com/transaction/initiate"
+# Squad Sandbox URL for testing
+SQUAD_URL = "https://sandbox-api-d.squadco.com/transaction/initiate"
 
 @router.post("/initiate")
 async def initiate_payment(
@@ -14,7 +14,6 @@ async def initiate_payment(
     amount: float = Form(...),
     verification_id: str = Form(...)
 ):
-    # Ensure your .env has the SQUAD_SECRET_KEY
     if not settings.SQUAD_SECRET_KEY:
         raise HTTPException(status_code=500, detail="Squad API key missing")
 
@@ -23,7 +22,7 @@ async def initiate_payment(
         "Content-Type": "application/json"
     }
 
-    # Squad expects amount in Kobo (Amount * 100)
+    # Squad expects amount in Kobo (10000 = 100 NGN)
     payload = {
         "amount": int(amount * 100),
         "email": email,
@@ -36,4 +35,6 @@ async def initiate_payment(
         response = await client.post(SQUAD_URL, json=payload, headers=headers)
         if response.status_code != 200:
             raise HTTPException(status_code=response.status_code, detail=response.json())
+        
+        # The frontend needs the 'checkout_url' from the data object
         return response.json()

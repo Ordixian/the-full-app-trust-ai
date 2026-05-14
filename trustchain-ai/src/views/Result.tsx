@@ -20,3 +20,4 @@ const handlePayment = async () => {
     setError("Payment initiation failed. Try again.");
   }
 };
+export default Result;
